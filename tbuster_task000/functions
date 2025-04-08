@@ -13,7 +13,7 @@ export TZ=JST-9
 # PostgreSQLのインストール
 postgres_install() {
   version=$1
-  cmd="sudo dnf install -y postgresql$version-server"
+  cmd="sudo apt install -y postgresql$version-server"
   exec_command "$cmd" || return $?
 }
 
@@ -147,14 +147,14 @@ disk_format_and_mount() {
 
 # nfsのインストールチェック
 nfs_check_install() {
-  cmd="dnf list installed | grep nfs-utils"
+  cmd="apt list installed | grep nfs-utils"
   exec_command "$cmd" || return $?
 }
 
 # nfsのインストール
 nfs_install() {
   if ! nfs_check_install; then
-    cmd="sudo dnf install -y nfs-utils"
+    cmd="sudo apt install -y nfs-utils"
     exec_command "$cmd" || return $?
   fi
 }
@@ -209,7 +209,7 @@ mount_nfs() {
 
 postgres_client_install() {
   version=$1
-  cmd="sudo dnf install -y postgresql$version"
+  cmd="sudo apt install -y postgresql$version"
   exec_command "$cmd" || return $?
 }
 
