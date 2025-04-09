@@ -20,6 +20,10 @@ data_file="data.csv"
 # start
 log_start
 
+h3 "Enable sudo with no password"
+enable_sudo || fail
+ok
+
 h2 "PostgreSQL"
 h3 "Install PostgreSQL"
 postgres_install $pg_version || fail
