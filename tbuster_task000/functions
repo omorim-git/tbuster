@@ -13,27 +13,27 @@ export TZ=JST-9
 # PostgreSQLのインストール
 postgres_install() {
   version=$1
-  cmd="sudo apt install -y postgresql$version-server"
+  cmd="sudo apt-get install -y postgresql-$version"
   exec_command "$cmd" || return $?
 }
 
 # PostgreSQLデータベースの初期化
 postgres_initdb() {
   version=$1
-  cmd="sudo -u postgres postgresql-setup --initdb --unit postgresql"
+  cmd="sudo runuser -l postgres -c \"postgresql-setup --initdb --unit postgresql\""
   exec_command "$cmd" || return $?
 }
 
 # PostgreSQLサービスの起動と有効化
 postgres_enable_service() {
-  cmd="sudo systemctl start postgresql"
+  cmd="sudo service start postgresql"
   exec_command "$cmd" || return $?
-  cmd="sudo systemctl enable postgresql"
+  cmd="sudo update-rc.d postgresql enable"
   exec_command "$cmd" || return $?
 }
 
 postgres_start() {
-  cmd="sudo systemctl start postgresql"
+  cmd="sudo service start postgresql"
   exec_command "$cmd" || return $?
 }
 
@@ -41,34 +41,34 @@ postgres_start() {
 postgres_set_password() {
   user=$1
   pass=$2
-  cmd="sudo -u postgres psql -c \"ALTER USER $user WITH PASSWORD '$pass';\""
+  cmd="sudo runuser -l postgres -c \"psql -c \\\"ALTER USER $user WITH PASSWORD '$pass';\\\"\""
   exec_command "$cmd" || return $?
 }
 
 # 新しいデータベースの作成
 postgres_create_db() {
   db=$1
-  check_cmd="sudo -u postgres psql -c \"SELECT datname FROM pg_database WHERE datname = '$db';\" | grep -q '0 rows'"
-  cmd="sudo -u postgres psql -c \"CREATE DATABASE $db;\""
+  check_cmd="sudo runuser -l postgres -c \"psql -c \\\"SELECT datname FROM pg_database WHERE datname = '$db';\\\" | grep -q '0 rows'\""
+  cmd="sudo runuser -l postgres -c \"psql -c \\\"CREATE DATABASE $db;\\\"\""
   ! exec_command "$check_cmd" || exec_command "$cmd" || return $?
 }
 
 # PostgreSQLの設定編集
 postgres_configure() {
   version=$1
-  sed_cmd="sudo sed -i \"s/^#listen_addresses = 'localhost'/listen_addresses = '*'/\" /var/lib/pgsql/data/postgresql.conf"
+  sed_cmd="sudo sed -i \"s/^#listen_addresses = 'localhost'/listen_addresses = '*'/\" /etc/postgresql/$version/main/postgresql.conf"
   exec_command "$sed_cmd" || return $?
-  sed_cmd="sudo sed -i \"s/^max_connections = [0-9]\+/max_connections = 4/\" /var/lib/pgsql/data/postgresql.conf"
+  sed_cmd="sudo sed -i \"s/^max_connections = [0-9]\+/max_connections = 4/\" /etc/postgresql/$version/main/postgresql.conf"
   exec_command "$sed_cmd" || return $?
-  hba_check_cmd="sudo grep -E '^host\s+all\s+all\s+0\.0\.0\.0/0\s+md5' /var/lib/pgsql/data/pg_hba.conf"
-  hba_cmd="echo \"host all all 0.0.0.0/0 md5\" | sudo tee -a /var/lib/pgsql/data/pg_hba.conf"
+  hba_check_cmd="sudo grep -E '^host\s+all\s+all\s+0\.0\.0\.0/0\s+md5' /etc/postgresql/$version/main/pg_hba.conf"
+  hba_cmd="echo \"host all all 0.0.0.0/0 md5\" | sudo tee -a /etc/postgresql/$version/main/pg_hba.conf"
   exec_command "$hba_check_cmd" || exec_command "$hba_cmd" || return $?
 }
 
 # PostgreSQLサービスの再起動
 postgres_restart_service() {
   version=$1
-  cmd="sudo systemctl restart postgresql"
+  cmd="sudo service restart postgresql"
   exec_command "$cmd" || return $?
 }
 
@@ -96,16 +96,16 @@ postgres_import_data() {
   dir=$3
   file=$4
   create_data data.csv || return $?
-  check_cmd="sudo -u postgres psql -d $db -c \"SELECT * FROM pg_catalog.pg_tables WHERE tablename =  '$table';\" | grep -q '0 row'"
-  cmd="sudo -u postgres psql -d $db -c \"DROP TABLE $table;\""
+  check_cmd="sudo runuser -l postgres -c \"psql -d $db -c \\\"SELECT * FROM pg_catalog.pg_tables WHERE tablename =  '$table';\\\" | grep -q '0 row'\""
+  cmd="sudo runuser -l postgres -c \"psql -d $db -c \\\"DROP TABLE $table;\\\"\""
   exec_command "$check_cmd" || exec_command "$cmd" || return $?
-  cmd="sudo -u postgres psql -d $db -c \"CREATE TABLE $table (key TEXT PRIMARY KEY,text001 TEXT,text002 TEXT,text003 TEXT,text004 TEXT,text005 TEXT,text006 TEXT,text007 TEXT,text008 TEXT,text009 TEXT,text010 TEXT,text011 TEXT,text012 TEXT,text013 TEXT,text014 TEXT,text015 TEXT,text016 TEXT,text017 TEXT,text018 TEXT,text019 TEXT,text020 TEXT,text021 TEXT,text022 TEXT,text023 TEXT,text024 TEXT,text025 TEXT,text026 TEXT,text027 TEXT,text028 TEXT,text029 TEXT,text030 TEXT,text031 TEXT,text032 TEXT,text033 TEXT,text034 TEXT,text035 TEXT,text036 TEXT,text037 TEXT,text038 TEXT,text039 TEXT,text040 TEXT,text041 TEXT,text042 TEXT,text043 TEXT,text044 TEXT,text045 TEXT,text046 TEXT,text047 TEXT,text048 TEXT,text049 TEXT,text050 TEXT,text051 TEXT,text052 TEXT,text053 TEXT,text054 TEXT,text055 TEXT,text056 TEXT,text057 TEXT,text058 TEXT,text059 TEXT,text060 TEXT,text061 TEXT,text062 TEXT,text063 TEXT,text064 TEXT,text065 TEXT,text066 TEXT,text067 TEXT,text068 TEXT,text069 TEXT,text070 TEXT,text071 TEXT,text072 TEXT,text073 TEXT,text074 TEXT,text075 TEXT,text076 TEXT,text077 TEXT,text078 TEXT,text079 TEXT,text080 TEXT,text081 TEXT,text082 TEXT,text083 TEXT,text084 TEXT,text085 TEXT,text086 TEXT,text087 TEXT,text088 TEXT,text089 TEXT,text090 TEXT,text091 TEXT,text092 TEXT,text093 TEXT,text094 TEXT,text095 TEXT,text096 TEXT,text097 TEXT,text098 TEXT,text099 TEXT,text100 TEXT);\""
+  cmd="sudo runuser -l postgres -c \"psql -d $db -c \\\"CREATE TABLE $table (key TEXT PRIMARY KEY,text001 TEXT,text002 TEXT,text003 TEXT,text004 TEXT,text005 TEXT,text006 TEXT,text007 TEXT,text008 TEXT,text009 TEXT,text010 TEXT,text011 TEXT,text012 TEXT,text013 TEXT,text014 TEXT,text015 TEXT,text016 TEXT,text017 TEXT,text018 TEXT,text019 TEXT,text020 TEXT,text021 TEXT,text022 TEXT,text023 TEXT,text024 TEXT,text025 TEXT,text026 TEXT,text027 TEXT,text028 TEXT,text029 TEXT,text030 TEXT,text031 TEXT,text032 TEXT,text033 TEXT,text034 TEXT,text035 TEXT,text036 TEXT,text037 TEXT,text038 TEXT,text039 TEXT,text040 TEXT,text041 TEXT,text042 TEXT,text043 TEXT,text044 TEXT,text045 TEXT,text046 TEXT,text047 TEXT,text048 TEXT,text049 TEXT,text050 TEXT,text051 TEXT,text052 TEXT,text053 TEXT,text054 TEXT,text055 TEXT,text056 TEXT,text057 TEXT,text058 TEXT,text059 TEXT,text060 TEXT,text061 TEXT,text062 TEXT,text063 TEXT,text064 TEXT,text065 TEXT,text066 TEXT,text067 TEXT,text068 TEXT,text069 TEXT,text070 TEXT,text071 TEXT,text072 TEXT,text073 TEXT,text074 TEXT,text075 TEXT,text076 TEXT,text077 TEXT,text078 TEXT,text079 TEXT,text080 TEXT,text081 TEXT,text082 TEXT,text083 TEXT,text084 TEXT,text085 TEXT,text086 TEXT,text087 TEXT,text088 TEXT,text089 TEXT,text090 TEXT,text091 TEXT,text092 TEXT,text093 TEXT,text094 TEXT,text095 TEXT,text096 TEXT,text097 TEXT,text098 TEXT,text099 TEXT,text100 TEXT);\\\"\""
   exec_command "$cmd" || return $?
   cmd="chmod 777 $dir | chmod 777 $dir/$file"
   exec_command "$cmd" || return $?
   cmd="cd $dir"
   exec_command "$cmd" || return $?
-  cmd="sudo -u postgres psql -d $db -c \"\COPY $table FROM '$file' DELIMITER ',' CSV;\""
+  cmd="sudo runuser -l postgres -c \"psql -d $db -c \\\"\COPY $table FROM '$file' DELIMITER ',' CSV;\\\"\""
   exec_command "$cmd" || return $?
   cmd="cd .."
   exec_command "$cmd" || return $?
@@ -147,23 +147,23 @@ disk_format_and_mount() {
 
 # nfsのインストールチェック
 nfs_check_install() {
-  cmd="apt list installed | grep nfs-utils"
+  cmd="apt-get list installed | grep nfs-common"
   exec_command "$cmd" || return $?
 }
 
 # nfsのインストール
 nfs_install() {
   if ! nfs_check_install; then
-    cmd="sudo apt install -y nfs-utils"
+    cmd="sudo apt-get install -y nfs-common"
     exec_command "$cmd" || return $?
   fi
 }
 
 # nfsサービスの起動と有効化
 nfs_enable_service() {
-  cmd="sudo systemctl start nfs-server"
+  cmd="sudo service start nfs-kernel-server"
   exec_command "$cmd" || return $?
-  cmd="sudo systemctl enable nfs-server"
+  cmd="sudo update-rc.d nfs-kernel-server enable"
   exec_command "$cmd" || return $?
 }
 
@@ -209,7 +209,7 @@ mount_nfs() {
 
 postgres_client_install() {
   version=$1
-  cmd="sudo apt install -y postgresql$version"
+  cmd="sudo apt-get install -y postgresql$version"
   exec_command "$cmd" || return $?
 }
 
