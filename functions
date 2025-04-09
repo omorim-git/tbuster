@@ -52,7 +52,7 @@ postgres_set_password() {
 # 新しいデータベースの作成
 postgres_create_db() {
   db=$1
-  check_cmd="sudo-u postgres psql -c \"SELECT datname FROM pg_database WHERE datname = '$db';\" | grep -q '0 rows'"
+  check_cmd="sudo -u postgres psql -c \"SELECT datname FROM pg_database WHERE datname = '$db';\" | grep -q '0 rows'"
   cmd="sudo -u postgres psql -c \"CREATE DATABASE $db;\""
   ! exec_command "$check_cmd" || exec_command "$cmd" || return $?
 }
@@ -228,31 +228,6 @@ create_dummy_files() {
         echo "This is a dummy file." > $dummy_file || return $?
     done
   fi
-}
-
-create_error01() {
-  db_ip=$1
-  db_user=$2
-  db_pass=$3
-  cmd="echo \"#!/bin/bash\" > error01.sh"
-  exec_command "$cmd" || return $?
-  cmd="echo \"seconds=60\" >> error01.sh"
-  exec_command "$cmd" || return $?
-  cmd="echo \"if [ \"\\\$#\" -gt 0 ]; then\" >> error01.sh"
-  exec_command "$cmd" || return $?
-  cmd="echo \"    seconds=\\\$1\" >> error01.sh"
-  exec_command "$cmd" || return $?
-  cmd="echo \"fi\" >> error01.sh"
-  exec_command "$cmd" || return $?
-  cmd="echo \"export PGPASSWORD=$db_pass\" >> error01.sh"
-  exec_command "$cmd" || return $?
-  cmd="echo \"psql -h $db_ip -U $db_user -c \\\"SELECT pg_sleep(\\\$seconds);\\\" > /dev/null &\" >> error01.sh"
-  exec_command "$cmd" || return $?
-  exec_command "$cmd" || return $?
-  exec_command "$cmd" || return $?
-  exec_command "$cmd" || return $?
-  cmd="chmod +x error01.sh"
-  exec_command "$cmd" || return $?
 }
 
 #--------------------------------------

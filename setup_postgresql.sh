@@ -2,7 +2,7 @@
 
 set -e
 basedir=$(dirname $(readlink -f $0))
-cd $basedir
+#cd $basedir
 
 . functions
 
