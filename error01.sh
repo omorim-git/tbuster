@@ -1,5 +1,5 @@
 #!/bin/bash
-seconds=60
+seconds=43200
 if [ $# -gt 0 ]; then
     seconds=$1
 fi
